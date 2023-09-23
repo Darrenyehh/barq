@@ -7,10 +7,8 @@ from datetime import datetime, timezone
 import asyncio
 from google.cloud import speech, texttospeech
 import openai
-
 class Voicebox:
-    def __init__(self):
-        
+    def __init__(self, token):
         self.voice_connections = {}
         self.conversations = {}
         self.vc = None
@@ -18,7 +16,8 @@ class Voicebox:
         self.transcribing = False
         self.conversing = False
 
-        self.bot = discord.Bot()
+        self.bot = discord.Bot(command_prefix='!', intents=discord.Intents.all())
+        self.token = token
         logging.info('Controller initialized')
         
         @self.bot.event
