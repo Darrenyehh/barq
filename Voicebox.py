@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import asyncio
 from google.cloud import speech, texttospeech
 import openai
+
 class Voicebox:
     def __init__(self, token):
         self.voice_connections = {}
@@ -47,16 +48,9 @@ class Voicebox:
         @self.bot.command(description="Join voice channel.")
         async def join(interaction):
             user_id = interaction.user.id
-            thread_data = self.monitor.get_thread(user_id)
-            if thread_data:
-                self.voice_channel = self.bot.get_channel(thread_data[2])
-                self.vc = await self.voice_channel.connect()
-                await interaction.response.send_message("Joined the voice channel.")
-            
-                
-            else:
-                await interaction.response.send_message("Couldn't find a voice channel to connect to.")
-            
+            self.vc = await self.voice_channel.connect()
+            await interaction.response.send_message("Joined the voice channel.")
+        
         @self.bot.slash_command(description="Disconnect from voice channel.")
         async def disconnect(interaction):
             await self.vc.disconnect()
@@ -65,7 +59,6 @@ class Voicebox:
         @self.bot.command(description="Transcribe our voice channel.")
         async def transcribe(interaction):
             """Transcribe the voice channel"""
-            
             self.transcribing = True
             await interaction.response.send_message("Transcription started!")
  
@@ -88,7 +81,6 @@ class Voicebox:
             else:
                 await ctx.respond("I wasn't transcribing.")
         
-                
                 
 
         @self.bot.command(description="Begin a conversation with bot.")
