@@ -1,5 +1,12 @@
 # implementation   
 from Voicebox import Voicebox
+import os
 
-voicebox = Voicebox('YOUR_BOT_TOKEN', 'YOUR_SERVICE_ACCOUNT_KEY.json')
-voicebox.start()
+def main():
+    # implementation
+    token = os.getenv('DISCORD_BOT_TOKEN')
+    voicebox = Voicebox(token)
+    voicebox.start()
+
+if __name__ == '__main__':
+    main()

@@ -30,33 +30,6 @@ class Voicebox:
         async def status(ctx):
             await ctx.channel.send("Ready.")
 
-        @self.bot.command(description="Create new channels.")
-        async def channel(interaction):
-            user_id = interaction.user.id
-            user_name = interaction.user.name
-
-            # Check if the user already has an existing thread in the database
-            if self.monitor.check_thread(user_id=user_id) == True:
-                await interaction.response.send_message("Existing channel, check the left sidebar.") # add more info, possibly a redirect?
-                logging.warning(f"Attempted to create a new chat for user {user_id}, but a chat already exists.")
-                
-            else:
-                # If there is no existing thread, a new channel is made only accessible to the user and the bot
-                guild = interaction.guild
-                overwrites = {
-                    guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                    guild.me: discord.PermissionOverwrite(read_messages=True),
-                    interaction.user: discord.PermissionOverwrite(read_messages=True)
-                }
-                text_channel = await guild.create_text_channel(name=f"{user_name}-bot-text", overwrites=overwrites)
-                voice_channel = await guild.create_voice_channel(name=f"{user_name}-bot-voice")
-
-                # Metadata about the thread is written to the database
-                self.monitor.new_thread(text_channel.id, user_id, datetime.now(), voice_channel.id)
-
-                await interaction.response.send_message("Channels created.")
-                logging.info(f"Channels created for user {user_id}")
-
         @self.bot.command(description="Clear channel of messages.")
         async def clear(interaction):
             # TODO add InterBot developer role and have this check for that
@@ -71,33 +44,9 @@ class Voicebox:
 
             else:  # If user is not an admin
                 await interaction.response.send_message("Sorry, you do not have the perms for this.")  # Error message
-            
-        @self.bot.command(description="Delete our channels.")
-        async def delete(interaction):
-            user_id = interaction.user.id
-            response = self.monitor.delete_thread(user_id)
-            text_channel_id = response[1]
-            
-            if response[0] == "200: Thread deleted":
-                voice_channel_id = response[2]
-                text_channel = self.bot.get_channel(text_channel_id)
-                voice_channel = self.bot.get_channel(voice_channel_id)
-                if text_channel:
-                    await text_channel.delete()
-                    await voice_channel.delete()
-                await interaction.response.send_message("Channels deleted.")
-                logging.info(f"Channels for user {user_id} deleted successfully")
-            elif response[0] == "400: Thread not found":
-                await interaction.response.send_message("Couldnt find a channel. Already deleted?")
-                logging.warning(f"Attempted to delete channels for user {user_id}, but thread not found.")
-            else: # response[0] == "402: Thread could not be deleted"
-                await interaction.response.send_message("couldnt delete the thread.")
-                logging.error(f"Failed to delete channels for user {user_id}. Unknown error.")
 
         @self.bot.command(description="Join voice channel.")
-        async def connect(interaction):
-            # method to have bot connect to a channel
-            # First, get the text and voice channel id's 
+        async def join(interaction):
             user_id = interaction.user.id
             thread_data = self.monitor.get_thread(user_id)
             if thread_data:
